@@ -51,7 +51,8 @@
 - [x] Floyd-Warshall 全源最短路径
 
 ### 3.2 高级算法
-- [ ] A* 启发式搜索
+
+- [x] A* 启发式搜索
 - [x] Held-Karp TSP 算法
 - [ ] Kruskal 最小生成树
 - [ ] Prim 最小生成树
