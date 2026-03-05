@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useGraphStore } from '@/store/graphStore'
-import { MapPin, Route, Settings } from 'lucide-react'
+import { MapPin, Route, Settings, Info, BarChart3 } from 'lucide-react'
 import AlgorithmPanel from '../Algorithm/AlgorithmPanel'
+import PathInfoPanel from '../PathInfo/PathInfoPanel'
+import AlgorithmComparison from '../PathInfo/AlgorithmComparison'
 
-type Tab = 'nodes' | 'algorithms' | 'settings'
+type Tab = 'nodes' | 'algorithms' | 'pathInfo' | 'comparison' | 'settings'
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState<Tab>('nodes')
@@ -12,6 +14,8 @@ export default function Sidebar() {
   const tabs = [
     { id: 'nodes' as Tab, icon: MapPin, label: '节点' },
     { id: 'algorithms' as Tab, icon: Route, label: '算法' },
+    { id: 'pathInfo' as Tab, icon: Info, label: '路径信息' },
+    { id: 'comparison' as Tab, icon: BarChart3, label: '算法对比' },
     { id: 'settings' as Tab, icon: Settings, label: '设置' },
   ]
 
@@ -68,6 +72,10 @@ export default function Sidebar() {
         )}
 
         {activeTab === 'algorithms' && <AlgorithmPanel />}
+
+        {activeTab === 'pathInfo' && <PathInfoPanel />}
+
+        {activeTab === 'comparison' && <AlgorithmComparison />}
 
         {activeTab === 'settings' && (
           <div>
