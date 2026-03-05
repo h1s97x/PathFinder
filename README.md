@@ -1,19 +1,29 @@
-# 校园导航系统
+# PathFinder - 图算法可视化工具
 
-[![开发状态](https://img.shields.io/badge/状态-活跃开发-brightgreen)](./CURRENT_STATUS.md)
-[![进度](https://img.shields.io/badge/进度-85%25-blue)](./docs/roadmap.md)
+[![CI](https://github.com/h1s97x/PathFinder/actions/workflows/ci.yml/badge.svg)](https://github.com/h1s97x/PathFinder/actions/workflows/ci.yml)
+[![Deploy](https://github.com/h1s97x/PathFinder/actions/workflows/deploy.yml/badge.svg)](https://github.com/h1s97x/PathFinder/actions/workflows/deploy.yml)
+[![开发状态](https://img.shields.io/badge/状态-活跃开发-brightgreen)](./docs/PROJECT_COMPLETE.md)
+[![进度](https://img.shields.io/badge/进度-99%25-blue)](./docs/roadmap.md)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green)](./LICENSE)
 
-基于 React + TypeScript 的现代化校园导航系统,提供可视化的图操作、路径查询和算法演示功能。
+基于 React + TypeScript 的现代化图算法可视化工具，提供直观的图编辑、多种路径查询算法和实时可视化功能。
+
+## 🌐 在线演示
+
+**[https://h1s97x.github.io/PathFinder/](https://h1s97x.github.io/PathFinder/)**
 
 ## ✨ 特性
 
-- 🎨 现代化 UI 设计,响应式布局
-- 🖱️ 直观的图编辑功能(添加/删除/编辑节点和边)
-- 🔍 多种路径查询算法(Dijkstra、A*、DFS/BFS)
-- 🎬 算法可视化,支持步进执行
-- 💾 数据持久化,支持导入/导出
-- ⚡ 高性能渲染,支持大规模图
+- 🎨 现代化 UI 设计，响应式布局
+- 🖱️ 直观的图编辑功能（添加/删除/编辑节点和边）
+- 🔍 8 种经典图算法（Dijkstra、A*、BFS、DFS、Floyd-Warshall、Kruskal、Prim、TSP）
+- 🎬 算法可视化，支持步进执行和速度控制
+- 📊 多算法性能对比
+- 📈 详细的路径信息和统计
+- 💾 数据持久化，支持 JSON/CSV/TXT 导出
+- ⏮️ 完整的撤销/重做和历史记录
+- ⚡ 高性能渲染，支持缩放和平移
+- 🎯 右键菜单和快捷键支持
 
 ## 技术栈
 
@@ -26,26 +36,28 @@
 
 ## 📚 文档
 
-- [快速开始](./QUICKSTART.md) - 5分钟上手指南
-- [安装指南](./INSTALL.md) - 详细安装说明
-- [当前状态](./CURRENT_STATUS.md) - 开发进度和状态
-- [下一步计划](./NEXT_STEPS.md) - 开发路线图
+- [项目完成总结](./docs/PROJECT_COMPLETE.md) - 项目完成状态
+- [快速开始](./docs/QUICKSTART.md) - 5分钟上手指南
+- [安装指南](./docs/INSTALL.md) - 详细安装说明
+- [部署指南](./docs/deployment.md) - CI/CD 和 GitHub Pages
 - [架构设计](./docs/architecture.md) - 系统架构
 - [API 文档](./docs/api.md) - 接口文档
 - [使用指南](./docs/getting-started.md) - 详细教程
 - [示例数据](./docs/examples.md) - 示例和测试数据
-- [部署指南](./docs/deployment.md) - 部署说明
+- [开发路线图](./docs/roadmap.md) - 开发计划
 - [贡献指南](./CONTRIBUTING.md) - 如何贡献
 
 ## 🎯 项目状态
 
-**当前版本**: Alpha (v0.9.0)  
-**开发进度**: 85%  
+**当前版本**: v1.0.0  
+**开发进度**: 99%  
 **核心功能**: ✅ 完成  
-**算法可视化**: 🔄 开发中  
-**测试覆盖**: ⏳ 待开始
+**算法实现**: ✅ 完成 (8 个算法)  
+**可视化**: ✅ 完成  
+**数据管理**: ✅ 完成  
+**部署**: ✅ 完成
 
-查看 [详细状态](./CURRENT_STATUS.md) 和 [开发计划](./NEXT_STEPS.md)
+查看 [项目完成总结](./docs/PROJECT_COMPLETE.md) 了解详情
 
 ## 🚀 快速开始
 
