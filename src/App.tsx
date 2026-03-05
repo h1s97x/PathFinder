@@ -12,14 +12,14 @@ import { Graph } from './core/graph/Graph'
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const { setGraph, setMode } = useGraphStore()
+  const { setGraph, setMode, undo, redo } = useGraphStore()
 
   // 加载保存的数据
   useEffect(() => {
     const savedData = storage.load()
     if (savedData) {
       const graph = Graph.fromJSON(savedData)
-      setGraph(graph)
+      setGraph(graph, false) // 不记录历史
     }
   }, [setGraph])
 
@@ -34,6 +34,21 @@ function App() {
       const { graph } = useGraphStore.getState()
       storage.save(graph)
       alert('保存成功')
+    },
+    'ctrl+z': () => {
+      undo()
+    },
+    'meta+z': () => {
+      undo()
+    },
+    'ctrl+shift+z': () => {
+      redo()
+    },
+    'meta+shift+z': () => {
+      redo()
+    },
+    'ctrl+y': () => {
+      redo()
     },
     space: () => setMode('view'),
     n: () => setMode('add-node'),

@@ -1,15 +1,21 @@
 import { create } from 'zustand'
 import { Graph } from '@/core/graph/Graph'
-import type { Node, Edge, EditMode } from '@/types/graph'
+import type { Node, Edge, EditMode, GraphJSON } from '@/types/graph'
+
+interface HistoryState {
+  past: GraphJSON[]
+  future: GraphJSON[]
+}
 
 interface GraphStore {
   graph: Graph
   selectedNodes: Set<string>
   selectedEdges: Set<string>
   mode: EditMode
+  history: HistoryState
 
   // 图操作
-  setGraph: (graph: Graph) => void
+  setGraph: (graph: Graph, recordHistory?: boolean) => void
   addNode: (node: Node) => void
   removeNode: (nodeId: string) => void
   updateNode: (nodeId: string, updates: Partial<Node>) => void
@@ -26,23 +32,51 @@ interface GraphStore {
   // 模式切换
   setMode: (mode: EditMode) => void
 
+  // 历史操作
+  undo: () => void
+  redo: () => void
+  canUndo: () => boolean
+  canRedo: () => boolean
+
   // 工具方法
   reset: () => void
 }
 
-export const useGraphStore = create<GraphStore>((set) => ({
+export const useGraphStore = create<GraphStore>((set, get) => ({
   graph: new Graph(),
   selectedNodes: new Set(),
   selectedEdges: new Set(),
   mode: 'view',
+  history: {
+    past: [],
+    future: [],
+  },
 
-  setGraph: (graph) => set({ graph }),
+  setGraph: (graph, recordHistory = true) =>
+    set((state) => {
+      if (recordHistory) {
+        return {
+          graph,
+          history: {
+            past: [...state.history.past, state.graph.toJSON()],
+            future: [],
+          },
+        }
+      }
+      return { graph }
+    }),
 
   addNode: (node) =>
     set((state) => {
       const newGraph = state.graph.clone()
       newGraph.addNode(node)
-      return { graph: newGraph }
+      return {
+        graph: newGraph,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   removeNode: (nodeId) =>
@@ -51,21 +85,40 @@ export const useGraphStore = create<GraphStore>((set) => ({
       newGraph.removeNode(nodeId)
       const newSelectedNodes = new Set(state.selectedNodes)
       newSelectedNodes.delete(nodeId)
-      return { graph: newGraph, selectedNodes: newSelectedNodes }
+      return {
+        graph: newGraph,
+        selectedNodes: newSelectedNodes,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   updateNode: (nodeId, updates) =>
     set((state) => {
       const newGraph = state.graph.clone()
       newGraph.updateNode(nodeId, updates)
-      return { graph: newGraph }
+      return {
+        graph: newGraph,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   addEdge: (edge) =>
     set((state) => {
       const newGraph = state.graph.clone()
       newGraph.addEdge(edge)
-      return { graph: newGraph }
+      return {
+        graph: newGraph,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   removeEdge: (edgeId) =>
@@ -74,14 +127,27 @@ export const useGraphStore = create<GraphStore>((set) => ({
       newGraph.removeEdge(edgeId)
       const newSelectedEdges = new Set(state.selectedEdges)
       newSelectedEdges.delete(edgeId)
-      return { graph: newGraph, selectedEdges: newSelectedEdges }
+      return {
+        graph: newGraph,
+        selectedEdges: newSelectedEdges,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   updateEdge: (edgeId, updates) =>
     set((state) => {
       const newGraph = state.graph.clone()
       newGraph.updateEdge(edgeId, updates)
-      return { graph: newGraph }
+      return {
+        graph: newGraph,
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: [],
+        },
+      }
     }),
 
   selectNode: (nodeId, multi = false) =>
@@ -110,11 +176,55 @@ export const useGraphStore = create<GraphStore>((set) => ({
 
   setMode: (mode) => set({ mode }),
 
+  undo: () =>
+    set((state) => {
+      if (state.history.past.length === 0) return state
+
+      const previous = state.history.past[state.history.past.length - 1]
+      const newPast = state.history.past.slice(0, -1)
+
+      return {
+        graph: Graph.fromJSON(previous),
+        history: {
+          past: newPast,
+          future: [state.graph.toJSON(), ...state.history.future],
+        },
+        selectedNodes: new Set(),
+        selectedEdges: new Set(),
+      }
+    }),
+
+  redo: () =>
+    set((state) => {
+      if (state.history.future.length === 0) return state
+
+      const next = state.history.future[0]
+      const newFuture = state.history.future.slice(1)
+
+      return {
+        graph: Graph.fromJSON(next),
+        history: {
+          past: [...state.history.past, state.graph.toJSON()],
+          future: newFuture,
+        },
+        selectedNodes: new Set(),
+        selectedEdges: new Set(),
+      }
+    }),
+
+  canUndo: () => get().history.past.length > 0,
+
+  canRedo: () => get().history.future.length > 0,
+
   reset: () =>
     set({
       graph: new Graph(),
       selectedNodes: new Set(),
       selectedEdges: new Set(),
       mode: 'view',
+      history: {
+        past: [],
+        future: [],
+      },
     }),
 }))

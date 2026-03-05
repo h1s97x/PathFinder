@@ -20,7 +20,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ onToggleSidebar }: ToolbarProps) {
-  const { mode, setMode, graph, setGraph } = useGraphStore()
+  const { mode, setMode, graph, setGraph, undo, redo, canUndo, canRedo } = useGraphStore()
 
   const tools: Array<{ mode: EditMode; icon: any; label: string }> = [
     { mode: 'view', icon: MousePointer2, label: '选择 (Space)' },
@@ -85,16 +85,26 @@ export default function Toolbar({ onToggleSidebar }: ToolbarProps) {
 
       {/* 历史操作 */}
       <button
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+        onClick={undo}
+        disabled={!canUndo()}
+        className={`p-2 rounded-lg transition-colors ${
+          canUndo()
+            ? 'hover:bg-gray-100 text-gray-600'
+            : 'text-gray-300 cursor-not-allowed'
+        }`}
         title="撤销 (Ctrl+Z)"
-        disabled
       >
         <Undo className="w-5 h-5" />
       </button>
       <button
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-        title="重做 (Ctrl+Shift+Z)"
-        disabled
+        onClick={redo}
+        disabled={!canRedo()}
+        className={`p-2 rounded-lg transition-colors ${
+          canRedo()
+            ? 'hover:bg-gray-100 text-gray-600'
+            : 'text-gray-300 cursor-not-allowed'
+        }`}
+        title="重做 (Ctrl+Shift+Z / Ctrl+Y)"
       >
         <Redo className="w-5 h-5" />
       </button>
