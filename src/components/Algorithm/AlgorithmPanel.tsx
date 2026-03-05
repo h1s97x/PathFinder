@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Zap } from 'lucide-react'
 import { useAlgorithmStore } from '@/store/algorithmStore'
 import { useGraphStore } from '@/store/graphStore'
-import { DijkstraAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm, FloydWarshallAlgorithm } from '@/core/algorithms'
+import { DijkstraAlgorithm, AStarAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm, FloydWarshallAlgorithm } from '@/core/algorithms'
 import { useAlgorithmExecution } from '@/hooks/useAlgorithmExecution'
 
 export default function AlgorithmPanel() {
@@ -17,6 +17,7 @@ export default function AlgorithmPanel() {
 
   const algorithms = [
     { id: 'dijkstra', name: 'Dijkstra', description: '单源最短路径' },
+    { id: 'astar', name: 'A*', description: '启发式搜索' },
     { id: 'floyd', name: 'Floyd-Warshall', description: '全源最短路径' },
     { id: 'bfs', name: 'BFS', description: '广度优先搜索' },
     { id: 'dfs', name: 'DFS', description: '深度优先搜索' },
@@ -30,6 +31,12 @@ export default function AlgorithmPanel() {
       return
     }
 
+    // A* 需要终点
+    if (selectedAlgorithm === 'astar' && !endNode) {
+      alert('A* 算法需要选择终点')
+      return
+    }
+
     try {
       switch (selectedAlgorithm) {
         case 'dijkstra': {
@@ -37,6 +44,14 @@ export default function AlgorithmPanel() {
           await executeAlgorithm(algorithm, {
             startNodeId: startNode,
             endNodeId: endNode || undefined,
+          })
+          break
+        }
+        case 'astar': {
+          const algorithm = new AStarAlgorithm()
+          await executeAlgorithm(algorithm, {
+            startNodeId: startNode,
+            endNodeId: endNode,
           })
           break
         }
@@ -139,7 +154,7 @@ export default function AlgorithmPanel() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              终点 (可选)
+              终点 {selectedAlgorithm === 'astar' ? '(必选)' : '(可选)'}
             </label>
             <select
               value={endNode}
@@ -147,7 +162,9 @@ export default function AlgorithmPanel() {
               disabled={isRunning}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
             >
-              <option value="">选择终点(可选)</option>
+              <option value="">
+                {selectedAlgorithm === 'astar' ? '选择终点' : '选择终点(可选)'}
+              </option>
               {graph.getAllNodes().map((node) => (
                 <option key={node.id} value={node.id}>
                   {node.label}
