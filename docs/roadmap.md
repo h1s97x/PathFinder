@@ -54,8 +54,8 @@
 
 - [x] A* 启发式搜索
 - [x] Held-Karp TSP 算法
-- [ ] Kruskal 最小生成树
-- [ ] Prim 最小生成树
+- [x] Kruskal 最小生成树
+- [x] Prim 最小生成树
 
 ### 3.3 算法可视化
 - [x] 算法执行状态管理
