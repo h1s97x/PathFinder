@@ -6,11 +6,19 @@ import NodeDragger from './NodeDragger'
 import EdgeCreator from './EdgeCreator'
 import NodeEditModal from '../Modal/NodeEditModal'
 import EdgeEditModal from '../Modal/EdgeEditModal'
+import ContextMenu, { type ContextMenuItem, Edit, Trash2, Copy, Info } from '../ContextMenu/ContextMenu'
 import type { Node, Edge } from '@/types/graph'
+
+interface ContextMenuState {
+  show: boolean
+  x: number
+  y: number
+  items: ContextMenuItem[]
+}
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLDivElement>(null)
-  const { graph, mode, addNode, selectedNodes, selectNode, updateNode, updateEdge, removeNode, removeEdge } = useGraphStore()
+  const { graph, mode, addNode, selectedNodes, selectNode, updateNode, updateEdge, removeNode, removeEdge, clearSelection } = useGraphStore()
   const { isRunning, currentStep, steps } = useAlgorithmStore()
   const { viewport, zoom, pan, reset, screenToWorld } = useViewport()
   const [nextNodeId, setNextNodeId] = useState(1)
@@ -18,6 +26,12 @@ export default function Canvas() {
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null)
   const [isPanning, setIsPanning] = useState(false)
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    show: false,
+    x: 0,
+    y: 0,
+    items: [],
+  })
 
   // 获取当前步骤的高亮节点和边
   const getHighlightedElements = () => {
@@ -112,6 +126,43 @@ export default function Canvas() {
     }
   }
 
+  const handleNodeContextMenu = (node: Node, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const items: ContextMenuItem[] = [
+      {
+        label: '编辑节点',
+        icon: Edit,
+        onClick: () => setEditingNode(node),
+      },
+      {
+        label: '查看信息',
+        icon: Info,
+        onClick: () => {
+          alert(`节点: ${node.label}\n描述: ${node.description}\n位置: (${Math.round(node.position.x)}, ${Math.round(node.position.y)})`)
+        },
+      },
+      { divider: true } as ContextMenuItem,
+      {
+        label: '删除节点',
+        icon: Trash2,
+        onClick: () => {
+          if (confirm(`确定要删除节点 "${node.label}" 吗?`)) {
+            removeNode(node.id)
+          }
+        },
+      },
+    ]
+
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      items,
+    })
+  }
+
   const handleEdgeClick = (edge: Edge, e: React.MouseEvent) => {
     e.stopPropagation()
 
@@ -126,12 +177,94 @@ export default function Canvas() {
     }
   }
 
+  const handleEdgeContextMenu = (edge: Edge, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const source = graph.getNode(edge.source)
+    const target = graph.getNode(edge.target)
+
+    const items: ContextMenuItem[] = [
+      {
+        label: '编辑边',
+        icon: Edit,
+        onClick: () => setEditingEdge(edge),
+      },
+      {
+        label: '查看信息',
+        icon: Info,
+        onClick: () => {
+          alert(`从: ${source?.label}\n到: ${target?.label}\n权重: ${edge.weight}`)
+        },
+      },
+      { divider: true } as ContextMenuItem,
+      {
+        label: '删除边',
+        icon: Trash2,
+        onClick: () => {
+          if (confirm(`确定要删除从 "${source?.label}" 到 "${target?.label}" 的边吗?`)) {
+            removeEdge(edge.id)
+          }
+        },
+      },
+    ]
+
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      items,
+    })
+  }
+
+  const handleCanvasContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const screenX = e.clientX - rect.left
+    const screenY = e.clientY - rect.top
+    const worldPos = screenToWorld(screenX, screenY)
+
+    const items: ContextMenuItem[] = [
+      {
+        label: '在此添加节点',
+        icon: Copy,
+        onClick: () => {
+          const newNode: Node = {
+            id: `node-${nextNodeId}`,
+            label: `节点 ${nextNodeId}`,
+            description: `这是节点 ${nextNodeId}`,
+            position: { x: worldPos.x, y: worldPos.y },
+          }
+          addNode(newNode)
+          setNextNodeId(nextNodeId + 1)
+        },
+      },
+      { divider: true } as ContextMenuItem,
+      {
+        label: '清除选择',
+        onClick: () => clearSelection(),
+        disabled: selectedNodes.size === 0,
+      },
+    ]
+
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      items,
+    })
+  }
+
   return (
     <div className="flex-1 relative bg-gray-50 overflow-hidden">
       <div
         ref={canvasRef}
         className="w-full h-full relative"
         onClick={handleCanvasClick}
+        onContextMenu={handleCanvasContextMenu}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -184,6 +317,7 @@ export default function Canvas() {
                     isHighlighted ? 'drop-shadow-lg' : 'hover:stroke-amber-500'
                   }`}
                   onClick={(e) => handleEdgeClick(edge, e as any)}
+                  onContextMenu={(e) => handleEdgeContextMenu(edge, e as any)}
                 />
                 {/* 边权重背景 */}
                 <rect
@@ -197,6 +331,7 @@ export default function Canvas() {
                   rx="4"
                   className="pointer-events-auto cursor-pointer"
                   onClick={(e) => handleEdgeClick(edge, e as any)}
+                  onContextMenu={(e) => handleEdgeContextMenu(edge, e as any)}
                 />
                 {/* 边权重文字 */}
                 <text
@@ -209,6 +344,7 @@ export default function Canvas() {
                   dominantBaseline="middle"
                   className="pointer-events-auto cursor-pointer select-none"
                   onClick={(e) => handleEdgeClick(edge, e as any)}
+                  onContextMenu={(e) => handleEdgeContextMenu(edge, e as any)}
                 >
                   {edge.weight}
                 </text>
@@ -237,6 +373,7 @@ export default function Canvas() {
                   top: node.position.y - 24,
                 }}
                 onClick={(e) => handleNodeClick(node, e)}
+                onContextMenu={(e) => handleNodeContextMenu(node, e)}
                 title={`${node.label}\n${node.description}`}
               >
                 {node.id.replace('node-', '')}
@@ -344,6 +481,16 @@ export default function Canvas() {
           setEditingEdge(null)
         }}
       />
+
+      {/* 右键菜单 */}
+      {contextMenu.show && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenu.items}
+          onClose={() => setContextMenu({ ...contextMenu, show: false })}
+        />
+      )}
     </div>
   )
 }

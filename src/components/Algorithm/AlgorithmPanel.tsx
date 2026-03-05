@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Zap } from 'lucide-react'
 import { useAlgorithmStore } from '@/store/algorithmStore'
 import { useGraphStore } from '@/store/graphStore'
-import { DijkstraAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm } from '@/core/algorithms'
+import { DijkstraAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm, FloydWarshallAlgorithm } from '@/core/algorithms'
 import { useAlgorithmExecution } from '@/hooks/useAlgorithmExecution'
 
 export default function AlgorithmPanel() {
@@ -17,13 +17,15 @@ export default function AlgorithmPanel() {
 
   const algorithms = [
     { id: 'dijkstra', name: 'Dijkstra', description: '单源最短路径' },
+    { id: 'floyd', name: 'Floyd-Warshall', description: '全源最短路径' },
     { id: 'bfs', name: 'BFS', description: '广度优先搜索' },
     { id: 'dfs', name: 'DFS', description: '深度优先搜索' },
     { id: 'tsp', name: 'TSP', description: '旅行商问题' },
   ]
 
   const handleRun = async () => {
-    if (!startNode) {
+    // Floyd-Warshall 不需要起点
+    if (selectedAlgorithm !== 'floyd' && !startNode) {
       alert('请选择起点')
       return
     }
@@ -36,6 +38,11 @@ export default function AlgorithmPanel() {
             startNodeId: startNode,
             endNodeId: endNode || undefined,
           })
+          break
+        }
+        case 'floyd': {
+          const algorithm = new FloydWarshallAlgorithm()
+          await executeAlgorithm(algorithm, {})
           break
         }
         case 'bfs': {
@@ -105,7 +112,13 @@ export default function AlgorithmPanel() {
       </div>
 
       {/* 节点选择 */}
-      {selectedAlgorithm !== 'tsp' ? (
+      {selectedAlgorithm === 'floyd' ? (
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            Floyd-Warshall 算法会计算所有节点对之间的最短路径，不需要选择起点和终点。
+          </p>
+        </div>
+      ) : selectedAlgorithm !== 'tsp' ? (
         <div className="space-y-3 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">起点</label>
