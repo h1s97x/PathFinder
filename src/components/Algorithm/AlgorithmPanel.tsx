@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Zap } from 'lucide-react'
 import { useAlgorithmStore } from '@/store/algorithmStore'
 import { useGraphStore } from '@/store/graphStore'
-import { DijkstraAlgorithm, AStarAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm, FloydWarshallAlgorithm } from '@/core/algorithms'
+import { DijkstraAlgorithm, AStarAlgorithm, BFSAlgorithm, DFSAlgorithm, HeldKarpAlgorithm, FloydWarshallAlgorithm, KruskalAlgorithm, PrimAlgorithm } from '@/core/algorithms'
 import { useAlgorithmExecution } from '@/hooks/useAlgorithmExecution'
 
 export default function AlgorithmPanel() {
@@ -21,12 +21,14 @@ export default function AlgorithmPanel() {
     { id: 'floyd', name: 'Floyd-Warshall', description: '全源最短路径' },
     { id: 'bfs', name: 'BFS', description: '广度优先搜索' },
     { id: 'dfs', name: 'DFS', description: '深度优先搜索' },
+    { id: 'kruskal', name: 'Kruskal', description: '最小生成树' },
+    { id: 'prim', name: 'Prim', description: '最小生成树' },
     { id: 'tsp', name: 'TSP', description: '旅行商问题' },
   ]
 
   const handleRun = async () => {
-    // Floyd-Warshall 不需要起点
-    if (selectedAlgorithm !== 'floyd' && !startNode) {
+    // Floyd-Warshall, Kruskal, Prim 不需要起点
+    if (!['floyd', 'kruskal', 'prim'].includes(selectedAlgorithm) && !startNode) {
       alert('请选择起点')
       return
     }
@@ -73,6 +75,18 @@ export default function AlgorithmPanel() {
           await executeAlgorithm(algorithm, {
             startNodeId: startNode,
             endNodeId: endNode || undefined,
+          })
+          break
+        }
+        case 'kruskal': {
+          const algorithm = new KruskalAlgorithm()
+          await executeAlgorithm(algorithm, {})
+          break
+        }
+        case 'prim': {
+          const algorithm = new PrimAlgorithm()
+          await executeAlgorithm(algorithm, {
+            startNodeId: startNode || undefined,
           })
           break
         }
@@ -132,6 +146,38 @@ export default function AlgorithmPanel() {
           <p className="text-sm text-blue-800">
             Floyd-Warshall 算法会计算所有节点对之间的最短路径，不需要选择起点和终点。
           </p>
+        </div>
+      ) : selectedAlgorithm === 'kruskal' ? (
+        <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-sm text-green-800">
+            Kruskal 算法通过贪心策略选择最小权重的边构建最小生成树，不需要选择起点。
+          </p>
+        </div>
+      ) : selectedAlgorithm === 'prim' ? (
+        <div className="mb-4 space-y-3">
+          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-sm text-green-800">
+              Prim 算法从起点开始逐步扩展最小生成树。起点可选，默认从第一个节点开始。
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              起点 (可选)
+            </label>
+            <select
+              value={startNode}
+              onChange={(e) => setStartNode(e.target.value)}
+              disabled={isRunning}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+            >
+              <option value="">默认第一个节点</option>
+              {graph.getAllNodes().map((node) => (
+                <option key={node.id} value={node.id}>
+                  {node.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       ) : selectedAlgorithm !== 'tsp' ? (
         <div className="space-y-3 mb-4">
